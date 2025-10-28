@@ -25,7 +25,7 @@ export const DashboardLayout = () => {
     { path: '/logs', label: 'Conversations', icon: MessageSquare },
     ...(isAdmin() ? [
       { path: '/agents', label: 'Agents', icon: Users },
-      { path: '/rag-data', label: 'RAG Data', icon: Database }
+      { path: '/rag-data', label: 'Knowledge Base', icon: Database }
     ] : [])
   ];
 

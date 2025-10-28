@@ -157,28 +157,6 @@ export const Logs = () => {
     }
   };
 
-  const formatTime = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatRelativeTime = (dateString) => {
-    if (!dateString) return '';
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
-
   const filteredPhones = phones.filter((phone) =>
     phone.phone_number.includes(searchQuery)
   );
@@ -242,7 +220,6 @@ export const Logs = () => {
                 <div className="phone-info">
                   <div className="phone-header">
                     <h3 className="phone-number">{phone.phone_number}</h3>
-                    <span className="time-badge">{formatRelativeTime(phone.last_interaction)}</span>
                   </div>
                   <div className="phone-meta">
                     <span className="meta-item">
@@ -337,48 +314,16 @@ export const Logs = () => {
                                                 <span></span>
                                                 <span></span>
                                               </span>
-                                              Playing... ({msg.audio.file_size_mb} MB)
+                                              Playing...
                                             </span>
                                           </>
                                         ) : (
                                           <>
                                             <Play size={16} />
-                                            <span>Voice Message ({msg.audio.file_size_mb} MB)</span>
+                                            <span>Voice Message</span>
                                           </>
                                         )}
                                       </button>
-                                      {/* Native audio player as fallback */}
-                                      <audio
-                                        controls
-                                        className="native-audio-player"
-                                        preload="none"
-                                        onError={(e) => {
-                                          console.error('Native audio player error:', {
-                                            error: e.target.error,
-                                            code: e.target.error?.code,
-                                            message: e.target.error?.message,
-                                            src: e.target.currentSrc,
-                                            audioId: msg.audio.id
-                                          });
-                                        }}
-                                        onLoadedData={() => console.log('✓ Native audio loaded:', msg.audio.id)}
-                                      >
-                                        <source
-                                          src={audioAPI.getAudioURL(selectedPhone.phone_number, msg.audio.id)}
-                                          type="audio/ogg"
-                                        />
-                                        <source
-                                          src={audioAPI.getAudioURL(selectedPhone.phone_number, msg.audio.id)}
-                                          type="audio/mpeg"
-                                        />
-                                        Your browser does not support the audio element.
-                                      </audio>
-                                      {msg.transcript && (
-                                        <div className="transcript-badge">
-                                          <span>🌐 {msg.transcript.detected_language.toUpperCase()}</span>
-                                          <span>{(msg.transcript.confidence_score * 100).toFixed(0)}%</span>
-                                        </div>
-                                      )}
                                     </>
                                   ) : (
                                     <div className="audio-placeholder">
@@ -394,8 +339,12 @@ export const Logs = () => {
                                   Original: {msg.transcript.original_text}
                                 </p>
                               )}
+                              {msg.transcript && msg.transcript.english_text && (
+                                <p className="bubble-text-english">
+                                  English: {msg.transcript.english_text}
+                                </p>
+                              )}
                             </div>
-                            <span className="bubble-time">{formatTime(msg.timestamp)}</span>
                           </div>
 
                           {/* Bot Response */}
@@ -403,7 +352,6 @@ export const Logs = () => {
                             <div className="bubble-content">
                               <p className="bubble-text">{msg.bot_response}</p>
                             </div>
-                            <span className="bubble-time">{formatTime(msg.timestamp)}</span>
                           </div>
                         </div>
                       </div>

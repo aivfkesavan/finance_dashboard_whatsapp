@@ -471,6 +471,17 @@
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+.bubble-text-english {
+  margin: 12px 0 0 0;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(66, 42, 251, 0.05) 0%, rgba(117, 81, 255, 0.05) 100%);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--brand-500);
+  border: 1px solid rgba(66, 42, 251, 0.15);
+}
+
 .bubble-time {
   display: block;
   font-size: 0.6875rem;

@@ -44,7 +44,7 @@ export const RAGData = () => {
       // Reset file input
       document.getElementById('fileInput').value = '';
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to update RAG data');
+      setError(err.response?.data?.detail || 'Failed to update knowledge base');
     } finally {
       setUploading(false);
     }
@@ -62,7 +62,7 @@ export const RAGData = () => {
     <div className="rag-data-page">
       <div className="page-header">
         <div>
-          <h1>RAG Data Management</h1>
+          <h1>Knowledge Base Management</h1>
           <p className="text-secondary">Update knowledge base documents</p>
         </div>
       </div>
@@ -71,7 +71,7 @@ export const RAGData = () => {
       <div className="alert alert-warning">
         <AlertCircle size={20} />
         <div>
-          <strong>Warning:</strong> Uploading new files will delete all existing RAG data and
+          <strong>Warning:</strong> Uploading new files will delete all existing knowledge base data and
           replace it with the new files. This action cannot be undone.
         </div>
       </div>
@@ -120,7 +120,7 @@ export const RAGData = () => {
                 onClick={handleUpload}
                 disabled={uploading}
               >
-                {uploading ? 'Uploading and Indexing...' : 'Upload & Update RAG Data'}
+                {uploading ? 'Uploading and Indexing...' : 'Upload & Update Knowledge Base'}
               </button>
             </div>
           )}
