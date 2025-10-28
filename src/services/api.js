@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://1f072868e0f3.ngrok-free.app';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ippopay-dev-api.vibestud.io';
 
 // Create axios instance with default config
 const api = axios.create({
