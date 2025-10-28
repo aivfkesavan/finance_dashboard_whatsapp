@@ -31,6 +31,14 @@ export const Login = () => {
   return (
     <div className="login-container">
       <div className="login-card">
+        <div className="login-logo">
+          <img
+            src="https://play-lh.googleusercontent.com/pDvYB-Fb6EP_sUbv98UhKgMRuLrGOG5KRhn0t2wiWs8uA5eF1lQUsOA1tJhIGoYQPrE"
+            alt="IppoPay"
+            className="login-logo-image"
+          />
+        </div>
+
         <div className="login-header">
           <h1>IppoPay Dashboard</h1>
           <p>WhatsApp Bot Management System</p>
@@ -80,12 +88,6 @@ export const Login = () => {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-
-        <div className="login-footer">
-          <p className="text-secondary">
-            Default credentials: admin / admin123
-          </p>
-        </div>
       </div>
     </div>
   );

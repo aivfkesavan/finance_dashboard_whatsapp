@@ -2,6 +2,35 @@
   min-height: 100vh;
 }
 
+/* Page Header - Horizon UI Style */
+.page-header {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -1px;
+}
+
+.page-header .subtitle,
+.page-header p {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin: 0;
+}
+
+.page-header .text-secondary {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin: 4px 0 0 0;
+}
+
 /* Button Styles - Horizon UI Modern */
 .btn {
   padding: 12px 24px;

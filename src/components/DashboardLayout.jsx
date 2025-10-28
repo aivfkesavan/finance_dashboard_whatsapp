@@ -46,7 +46,12 @@ export const DashboardLayout = () => {
               alt="IppoPay"
               className="logo-image"
             />
+            <div className="logo-text">
+              <h2 className="logo-title">IppoPay</h2>
+              <p className="logo-subtitle">WhatsApp Bot Dashboard</p>
+            </div>
           </div>
+          <div className="logo-separator"></div>
 
           {/* Navigation */}
           <nav className="sidebar-nav">
@@ -114,7 +119,12 @@ export const DashboardLayout = () => {
               alt="IppoPay"
               className="logo-image"
             />
+            <div className="logo-text">
+              <h2 className="logo-title">IppoPay</h2>
+              <p className="logo-subtitle">WhatsApp Bot Dashboard</p>
+            </div>
           </div>
+          <div className="logo-separator"></div>
 
           <nav className="sidebar-nav">
             {navItems.map((item) => {
