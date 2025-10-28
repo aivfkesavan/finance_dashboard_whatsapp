@@ -24,6 +24,10 @@ export const Logs = () => {
   const audioRef = useRef(null);
 
   useEffect(() => {
+    // Log API configuration on mount
+    console.log('=== API Configuration ===');
+    console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL || 'https://ippopay-dev-api.vibestud.io:8000');
+    console.log('Environment:', import.meta.env.MODE);
     fetchPhones();
   }, []);
 
@@ -45,6 +49,25 @@ export const Logs = () => {
       setSelectedPhone({ phone_number: phone.phone_number });
 
       const data = await phoneAPI.getPhoneDetails(phone.phone_number);
+      console.log('=== Phone Details Received ===');
+      console.log('Phone:', data.phone_number);
+      console.log('Total conversations:', data.conversations?.length);
+
+      // Check for audio messages
+      const audioMessages = data.conversations?.filter(msg => msg.message_type === 'audio') || [];
+      console.log('Audio messages found:', audioMessages.length);
+
+      audioMessages.forEach((msg, idx) => {
+        console.log(`Audio ${idx + 1}:`, {
+          id: msg.id,
+          message_type: msg.message_type,
+          has_audio_object: !!msg.audio,
+          audio_id: msg.audio?.id,
+          audio_size: msg.audio?.file_size_mb,
+          user_message: msg.user_message
+        });
+      });
+
       setSelectedPhone(data);
     } catch (err) {
       alert('Failed to load chat history');
@@ -329,6 +352,16 @@ export const Logs = () => {
                                         controls
                                         className="native-audio-player"
                                         preload="none"
+                                        onError={(e) => {
+                                          console.error('Native audio player error:', {
+                                            error: e.target.error,
+                                            code: e.target.error?.code,
+                                            message: e.target.error?.message,
+                                            src: e.target.currentSrc,
+                                            audioId: msg.audio.id
+                                          });
+                                        }}
+                                        onLoadedData={() => console.log('✓ Native audio loaded:', msg.audio.id)}
                                       >
                                         <source
                                           src={audioAPI.getAudioURL(selectedPhone.phone_number, msg.audio.id)}
@@ -350,7 +383,7 @@ export const Logs = () => {
                                   ) : (
                                     <div className="audio-placeholder">
                                       <Play size={16} />
-                                      <span>🎤 Voice Message</span>
+                                      <span>🎤 Voice Message (Audio data not available)</span>
                                     </div>
                                   )}
                                 </div>
