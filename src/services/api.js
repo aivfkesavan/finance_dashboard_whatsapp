@@ -101,14 +101,28 @@ export const audioAPI = {
 
   playAudio: async (phoneNumber, audioId) => {
     const token = localStorage.getItem('token');
-    const response = await fetch(
-      `${API_BASE_URL}/api/dashboard/audio/${phoneNumber}/${audioId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    const url = `${API_BASE_URL}/api/dashboard/audio/${phoneNumber}/${audioId}`;
+    console.log('Fetching audio from:', url);
+
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log('Audio response status:', response.status);
+    console.log('Audio response headers:', response.headers.get('content-type'));
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Audio fetch failed:', response.status, errorText);
+      throw new Error(`Failed to fetch audio: ${response.status} - ${errorText}`);
+    }
+
     const blob = await response.blob();
-    return URL.createObjectURL(blob);
+    console.log('Audio blob created:', blob.size, 'bytes, type:', blob.type);
+
+    const objectUrl = URL.createObjectURL(blob);
+    console.log('Audio object URL created:', objectUrl);
+    return objectUrl;
   },
 };
 

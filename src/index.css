@@ -1,3 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Brand Colors - Horizon UI Inspired */
+  --brand-50: #E9E3FF;
+  --brand-100: #E9E3FF;
+  --brand-200: #422AFB;
+  --brand-300: #422AFB;
+  --brand-400: #7551FF;
+  --brand-500: #422AFB;
+  --brand-600: #3311DB;
+  --brand-700: #02044A;
+  --brand-800: #190793;
+  --brand-900: #11047A;
+
+  /* Primary (for compatibility) */
+  --primary-color: #422AFB;
+  --primary-dark: #3311DB;
+  --primary-hover: #3311DB;
+
+  /* Secondary Gray */
+  --gray-50: #F7FAFC;
+  --gray-100: #E0E5F2;
+  --gray-200: #E1E9F8;
+  --gray-300: #F4F7FE;
+  --gray-400: #E9EDF7;
+  --gray-500: #8F9BBA;
+  --gray-600: #A3AED0;
+  --gray-700: #707EAE;
+  --gray-800: #2D3748;
+  --gray-900: #1B2559;
+
+  /* Status Colors */
+  --success-color: #01B574;
+  --warning-color: #FFB547;
+  --danger-color: #E31A1A;
+  --info-color: #4318FF;
+
+  /* Navy */
+  --navy-50: #d0dcfb;
+  --navy-100: #aac0fe;
+  --navy-700: #1B254B;
+  --navy-800: #111c44;
+  --navy-900: #0b1437;
+
+  /* Text */
+  --text-primary: #1B2559;
+  --text-secondary: #A3AED0;
+  --text-tertiary: #707EAE;
+
+  /* Borders */
+  --border-color: #E0E5F2;
+  --border-color-light: #F4F7FE;
+
+  /* Backgrounds */
+  --background: #FFFFFF;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F4F7FE;
+  --bg-tertiary: #F7FAFC;
+
+  /* Shadows - Horizon UI Style */
+  --shadow: 14px 17px 40px 4px rgba(112, 144, 176, 0.08);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 14px 17px 40px 4px rgba(112, 144, 176, 0.08);
+  --shadow-lg: 14px 17px 40px 4px rgba(112, 144, 176, 0.18);
+  --shadow-card: 14px 17px 40px 4px rgba(112, 144, 176, 0.08);
+
+  /* Border Radius */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-pill: 50px;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.25s ease;
+  --transition-smooth: 0.33s cubic-bezier(0.685, 0.0473, 0.346, 1);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -5,29 +84,15 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
-}
-
-:root {
-  --primary-color: #4f46e5;
-  --primary-dark: #4338ca;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --danger-color: #ef4444;
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --border-color: #e5e7eb;
-  --background: #ffffff;
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }

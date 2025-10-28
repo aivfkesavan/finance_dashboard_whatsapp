@@ -15,8 +15,7 @@ export const Logs = () => {
   const [phones, setPhones] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Chat Modal
-  const [showChatModal, setShowChatModal] = useState(false);
+  // Chat View
   const [selectedPhone, setSelectedPhone] = useState(null);
   const [chatLoading, setChatLoading] = useState(false);
 
@@ -43,14 +42,14 @@ export const Logs = () => {
   const handlePhoneClick = async (phone) => {
     try {
       setChatLoading(true);
-      setShowChatModal(true);
+      setSelectedPhone({ phone_number: phone.phone_number });
 
       const data = await phoneAPI.getPhoneDetails(phone.phone_number);
       setSelectedPhone(data);
     } catch (err) {
       alert('Failed to load chat history');
       console.error(err);
-      setShowChatModal(false);
+      setSelectedPhone(null);
     } finally {
       setChatLoading(false);
     }
@@ -58,8 +57,13 @@ export const Logs = () => {
 
   const handlePlayAudio = async (phoneNum, audioId) => {
     try {
+      console.log('=== Audio Play Request ===');
+      console.log('Phone:', phoneNum);
+      console.log('Audio ID:', audioId);
+
       // If clicking the same audio that's playing, pause it
       if (playingAudioId === audioId && audioRef.current) {
+        console.log('Pausing currently playing audio');
         audioRef.current.pause();
         setPlayingAudioId(null);
         audioRef.current = null;
@@ -68,13 +72,18 @@ export const Logs = () => {
 
       // Stop any currently playing audio
       if (audioRef.current) {
+        console.log('Stopping previous audio');
         audioRef.current.pause();
         audioRef.current = null;
       }
 
-      console.log('Playing audio:', phoneNum, audioId);
+      console.log('Fetching audio from API...');
       const audioUrl = await audioAPI.playAudio(phoneNum, audioId);
-      console.log('Audio URL created:', audioUrl);
+      console.log('Audio URL received:', audioUrl);
+
+      if (!audioUrl) {
+        throw new Error('No audio URL returned from API');
+      }
 
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
@@ -84,26 +93,41 @@ export const Logs = () => {
 
       // Add event listeners
       audio.addEventListener('loadeddata', () => {
-        console.log('Audio loaded successfully');
+        console.log('✓ Audio loaded successfully - ready to play');
+      });
+
+      audio.addEventListener('canplay', () => {
+        console.log('✓ Audio can start playing');
       });
 
       audio.addEventListener('ended', () => {
-        console.log('Audio finished playing');
+        console.log('✓ Audio finished playing');
         setPlayingAudioId(null);
         audioRef.current = null;
+        // Revoke the object URL to free memory
+        URL.revokeObjectURL(audioUrl);
       });
 
       audio.addEventListener('error', (e) => {
-        console.error('Audio playback error:', e);
-        alert('Failed to play audio. Please check console for details.');
+        console.error('✗ Audio playback error:', e);
+        console.error('Error details:', {
+          error: audio.error,
+          code: audio.error?.code,
+          message: audio.error?.message,
+          src: audio.src
+        });
+        alert(`Failed to play audio. Error: ${audio.error?.message || 'Unknown error'}`);
         setPlayingAudioId(null);
         audioRef.current = null;
+        URL.revokeObjectURL(audioUrl);
       });
 
+      console.log('Starting audio playback...');
       await audio.play();
-      console.log('Audio playing...');
+      console.log('✓ Audio playing successfully');
     } catch (err) {
-      console.error('Failed to play audio:', err);
+      console.error('✗ Failed to play audio:', err);
+      console.error('Error stack:', err.stack);
       alert('Failed to play audio: ' + err.message);
       setPlayingAudioId(null);
       audioRef.current = null;
@@ -138,39 +162,39 @@ export const Logs = () => {
 
   return (
     <div className="logs-page">
-      <div className="page-header">
-        <div>
-          <h1>Conversations</h1>
-          <p className="text-secondary">View chat history for all customers</p>
+      {/* Left Panel - Phone List */}
+      <div className="phone-list-panel">
+        <div className="panel-header">
+          <div>
+            <h1>Conversations</h1>
+            <p className="text-secondary">View chat history for all customers</p>
+          </div>
+          <button className="btn btn-primary" onClick={fetchPhones} disabled={loading}>
+            <RefreshCw size={16} />
+          </button>
         </div>
-        <button className="btn btn-primary" onClick={fetchPhones} disabled={loading}>
-          <RefreshCw size={16} />
-          Refresh
-        </button>
-      </div>
 
-      {/* Search Bar */}
-      <div className="search-section card">
-        <div className="search-bar">
-          <Search size={20} />
-          <input
-            type="text"
-            placeholder="Search phone numbers..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
+        {/* Search Bar */}
+        <div className="search-section">
+          <div className="search-bar">
+            <Search size={20} />
+            <input
+              type="text"
+              placeholder="Search phone numbers..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
+          <div className="stats-info">
+            <span className="stat-badge">
+              <Phone size={16} />
+              {filteredPhones.length} customers
+            </span>
+          </div>
         </div>
-        <div className="stats-info">
-          <span className="stat-badge">
-            <Phone size={16} />
-            {filteredPhones.length} customers
-          </span>
-        </div>
-      </div>
 
-      {/* Phone Numbers List */}
-      <div className="card">
+        {/* Phone List */}
         {loading ? (
           <div className="loading-container">
             <div className="spinner"></div>
@@ -186,7 +210,7 @@ export const Logs = () => {
             {filteredPhones.map((phone) => (
               <div
                 key={phone.phone_number}
-                className="phone-item"
+                className={`phone-item ${selectedPhone?.phone_number === phone.phone_number ? 'active' : ''}`}
                 onClick={() => handlePhoneClick(phone)}
               >
                 <div className="phone-avatar">
@@ -210,11 +234,17 @@ export const Logs = () => {
         )}
       </div>
 
-      {/* Chat Modal - WhatsApp Style */}
-      {showChatModal && selectedPhone && (
-        <div className="modal-overlay" onClick={() => setShowChatModal(false)}>
-          <div className="chat-modal" onClick={(e) => e.stopPropagation()}>
-            {/* Header */}
+      {/* Right Panel - Chat View */}
+      <div className="chat-panel">
+        {!selectedPhone ? (
+          <div className="empty-chat-state">
+            <MessageSquare size={64} />
+            <h2>Select a conversation</h2>
+            <p>Choose a phone number from the list to view chat history</p>
+          </div>
+        ) : (
+          <>
+            {/* Chat Header */}
             <div className="chat-header">
               <div className="chat-header-info">
                 <Phone size={20} />
@@ -227,16 +257,9 @@ export const Logs = () => {
                   </p>
                 </div>
               </div>
-              <button
-                className="modal-close"
-                onClick={() => setShowChatModal(false)}
-                title="Close"
-              >
-                ×
-              </button>
             </div>
 
-            {/* Body */}
+            {/* Chat Body */}
             <div className="chat-body">
               {chatLoading ? (
                 <div className="loading-container">
@@ -273,36 +296,61 @@ export const Logs = () => {
                           {/* Customer Message */}
                           <div className="chat-bubble customer-bubble">
                             <div className="bubble-content">
-                              {msg.message_type === 'audio' && msg.audio && (
+                              {msg.message_type === 'audio' && (
                                 <div className="audio-indicator">
-                                  <button
-                                    className={`play-audio-btn ${playingAudioId === msg.audio.id ? 'playing' : ''}`}
-                                    onClick={() => handlePlayAudio(selectedPhone.phone_number, msg.audio.id)}
-                                    title={playingAudioId === msg.audio.id ? 'Pause audio' : 'Play audio'}
-                                  >
-                                    {playingAudioId === msg.audio.id ? (
-                                      <>
-                                        <Pause size={16} />
-                                        <span className="playing-text">
-                                          <span className="audio-wave">
-                                            <span></span>
-                                            <span></span>
-                                            <span></span>
-                                          </span>
-                                          Playing... ({msg.audio.file_size_mb} MB)
-                                        </span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Play size={16} />
-                                        <span>Voice Message ({msg.audio.file_size_mb} MB)</span>
-                                      </>
-                                    )}
-                                  </button>
-                                  {msg.transcript && (
-                                    <div className="transcript-badge">
-                                      <span>🌐 {msg.transcript.detected_language.toUpperCase()}</span>
-                                      <span>{(msg.transcript.confidence_score * 100).toFixed(0)}%</span>
+                                  {msg.audio ? (
+                                    <>
+                                      <button
+                                        className={`play-audio-btn ${playingAudioId === msg.audio.id ? 'playing' : ''}`}
+                                        onClick={() => handlePlayAudio(selectedPhone.phone_number, msg.audio.id)}
+                                        title={playingAudioId === msg.audio.id ? 'Pause audio' : 'Play audio'}
+                                      >
+                                        {playingAudioId === msg.audio.id ? (
+                                          <>
+                                            <Pause size={16} />
+                                            <span className="playing-text">
+                                              <span className="audio-wave">
+                                                <span></span>
+                                                <span></span>
+                                                <span></span>
+                                              </span>
+                                              Playing... ({msg.audio.file_size_mb} MB)
+                                            </span>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Play size={16} />
+                                            <span>Voice Message ({msg.audio.file_size_mb} MB)</span>
+                                          </>
+                                        )}
+                                      </button>
+                                      {/* Native audio player as fallback */}
+                                      <audio
+                                        controls
+                                        className="native-audio-player"
+                                        preload="none"
+                                      >
+                                        <source
+                                          src={audioAPI.getAudioURL(selectedPhone.phone_number, msg.audio.id)}
+                                          type="audio/ogg"
+                                        />
+                                        <source
+                                          src={audioAPI.getAudioURL(selectedPhone.phone_number, msg.audio.id)}
+                                          type="audio/mpeg"
+                                        />
+                                        Your browser does not support the audio element.
+                                      </audio>
+                                      {msg.transcript && (
+                                        <div className="transcript-badge">
+                                          <span>🌐 {msg.transcript.detected_language.toUpperCase()}</span>
+                                          <span>{(msg.transcript.confidence_score * 100).toFixed(0)}%</span>
+                                        </div>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <div className="audio-placeholder">
+                                      <Play size={16} />
+                                      <span>🎤 Voice Message</span>
                                     </div>
                                   )}
                                 </div>
@@ -332,7 +380,7 @@ export const Logs = () => {
               )}
             </div>
 
-            {/* Summary Footer */}
+            {/* Chat Footer */}
             {!chatLoading && selectedPhone.summary && (
               <div className="chat-footer">
                 <div className="chat-stats">
@@ -342,9 +390,9 @@ export const Logs = () => {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 };
