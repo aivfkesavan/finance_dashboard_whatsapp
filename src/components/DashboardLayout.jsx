@@ -42,7 +42,7 @@ export const DashboardLayout = () => {
           {/* Logo */}
           <div className="sidebar-logo">
             <img
-              src="https://play-lh.googleusercontent.com/pDvYB-Fb6EP_sUbv98UhKgMRuLrGOG5KRhn0t2wiWs8uA5eF1lQUsOA1tJhIGoYQPrE"
+              src="https://pbs.twimg.com/profile_images/1973731349912535040/QvbTeYgE_400x400.jpg"
               alt="IppoPay"
               className="logo-image"
             />
@@ -115,7 +115,7 @@ export const DashboardLayout = () => {
         <div className="sidebar-content">
           <div className="sidebar-logo">
             <img
-              src="https://play-lh.googleusercontent.com/pDvYB-Fb6EP_sUbv98UhKgMRuLrGOG5KRhn0t2wiWs8uA5eF1lQUsOA1tJhIGoYQPrE"
+              src="https://pbs.twimg.com/profile_images/1973731349912535040/QvbTeYgE_400x400.jpg"
               alt="IppoPay"
               className="logo-image"
             />

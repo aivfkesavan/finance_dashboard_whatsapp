@@ -33,7 +33,7 @@ export const Login = () => {
       <div className="login-card">
         <div className="login-logo">
           <img
-            src="https://play-lh.googleusercontent.com/pDvYB-Fb6EP_sUbv98UhKgMRuLrGOG5KRhn0t2wiWs8uA5eF1lQUsOA1tJhIGoYQPrE"
+            src="https://pbs.twimg.com/profile_images/1973731349912535040/QvbTeYgE_400x400.jpg"
             alt="IppoPay"
             className="login-logo-image"
           />
