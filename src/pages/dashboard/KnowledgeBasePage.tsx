@@ -177,13 +177,13 @@ export function KnowledgeBasePage() {
           answer: formData.answer,
           keywords: formData.keywords,
         });
-        setSuccess('Entry updated successfully! Remember to sync to Qdrant.');
+        setSuccess('Entry updated successfully! Remember to sync to DB.');
       } else {
         await api.createKnowledgeBaseEntry({
           ...formData,
           category: categoryToSave,
         });
-        setSuccess('Entry created successfully! Remember to sync to Qdrant.');
+        setSuccess('Entry created successfully! Remember to sync to DB.');
       }
 
       cancelEdit();
@@ -202,7 +202,7 @@ export function KnowledgeBasePage() {
 
     try {
       await api.deleteKnowledgeBaseEntry(id);
-      setSuccess('Entry deleted successfully! Remember to sync to Qdrant.');
+      setSuccess('Entry deleted successfully! Remember to sync to DB.');
       await loadData();
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to delete entry');
@@ -210,7 +210,7 @@ export function KnowledgeBasePage() {
   };
 
   const handleSync = async () => {
-    if (!confirm('This will replace ALL data in Qdrant with current database entries. Continue?')) {
+    if (!confirm('This will sync ALL entries to the database. Continue?')) {
       return;
     }
 
@@ -218,10 +218,10 @@ export function KnowledgeBasePage() {
       setSyncing(true);
       setError(null);
       const result = await api.syncToQdrant();
-      setSuccess(`Synced ${result.vectors_uploaded} entries to Qdrant in ${result.time_taken_seconds.toFixed(1)}s`);
+      setSuccess(`Synced ${result.vectors_uploaded} entries to DB in ${result.time_taken_seconds.toFixed(1)}s`);
       await loadData();
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to sync to Qdrant');
+      setError(err.response?.data?.detail || 'Failed to sync to DB');
     } finally {
       setSyncing(false);
     }
@@ -234,7 +234,7 @@ export function KnowledgeBasePage() {
       setImporting(true);
       setError(null);
       const result = await api.importCSV(importFile, clearExisting);
-      setSuccess(`Imported ${result.imported} entries (${result.skipped} skipped). Remember to sync to Qdrant!`);
+      setSuccess(`Imported ${result.imported} entries (${result.skipped} skipped). Remember to sync to DB!`);
       setShowImportModal(false);
       setImportFile(null);
       setClearExisting(false);
@@ -266,7 +266,7 @@ export function KnowledgeBasePage() {
               Knowledge Base
             </h1>
             <p className="text-gray-600 mt-1">
-              Manage RAG Q&A entries for the AI chatbot
+              Manage Q&A entries for the AI chatbot
             </p>
           </div>
           <div className="flex gap-2">
@@ -335,7 +335,7 @@ export function KnowledgeBasePage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Qdrant Vectors</p>
+                  <p className="text-sm text-gray-600">DB Vectors</p>
                   <p className="text-2xl font-bold text-gray-900">{syncStatus?.qdrant_vectors || 0}</p>
                 </div>
                 <Database className="h-8 w-8 text-cyan-500" />
@@ -366,12 +366,12 @@ export function KnowledgeBasePage() {
                 {syncing ? (
                   <>
                     <RefreshCw className="h-5 w-5 animate-spin" />
-                    Syncing to Qdrant...
+                    Syncing to DB...
                   </>
                 ) : (
                   <>
                     <Database className="h-5 w-5" />
-                    Sync to Qdrant
+                    Sync to DB
                   </>
                 )}
               </button>
