@@ -25,6 +25,8 @@ import type {
   RAGSyncStatus,
   RAGSyncResult,
   CSVImportResult,
+  TestingConfig,
+  UpdateTestingConfig,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -386,6 +388,27 @@ class ApiClient {
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
     return response.data.stats || response.data.data?.stats || response.data;
+  }
+
+  // Testing Mode APIs
+  async getTestingConfig(): Promise<TestingConfig> {
+    const response = await this.client.get('/api/v1/testing/config');
+    return response.data;
+  }
+
+  async updateTestingConfig(config: UpdateTestingConfig): Promise<TestingConfig> {
+    const response = await this.client.post('/api/v1/testing/config', config);
+    return response.data;
+  }
+
+  async enableTestingMode(phoneNumber: string): Promise<TestingConfig> {
+    const response = await this.client.post(`/api/v1/testing/enable?phone_number=${phoneNumber}`);
+    return response.data;
+  }
+
+  async disableTestingMode(): Promise<TestingConfig> {
+    const response = await this.client.post('/api/v1/testing/disable');
+    return response.data;
   }
 }
 

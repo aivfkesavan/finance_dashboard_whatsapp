@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -7,6 +7,7 @@ import { Label } from '../../components/ui/label';
 import { Badge } from '../../components/ui/badge';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../lib/api';
+import type { TestingConfig } from '../../types';
 import {
   User,
   Mail,
@@ -20,6 +21,12 @@ import {
   AlertCircle,
   Calendar,
   CircleDot,
+  FlaskConical,
+  Phone,
+  ToggleLeft,
+  ToggleRight,
+  Loader2,
+  RefreshCw,
 } from 'lucide-react';
 
 export function SettingsPage() {
@@ -35,6 +42,83 @@ export function SettingsPage() {
   const [changing, setChanging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Testing Mode state (super_admin only)
+  const [testingConfig, setTestingConfig] = useState<TestingConfig | null>(null);
+  const [testingPhoneNumber, setTestingPhoneNumber] = useState('');
+  const [testingLoading, setTestingLoading] = useState(false);
+  const [testingError, setTestingError] = useState<string | null>(null);
+  const [testingSuccess, setTestingSuccess] = useState<string | null>(null);
+
+  // Fetch testing config on mount (only for super_admin)
+  useEffect(() => {
+    if (user?.role === 'super_admin') {
+      loadTestingConfig();
+    }
+  }, [user?.role]);
+
+  const loadTestingConfig = async () => {
+    try {
+      setTestingLoading(true);
+      const config = await api.getTestingConfig();
+      setTestingConfig(config);
+      setTestingPhoneNumber(config.phone_number || '');
+    } catch (err: any) {
+      console.error('Failed to load testing config:', err);
+      // Don't show error if API doesn't exist yet
+    } finally {
+      setTestingLoading(false);
+    }
+  };
+
+  const handleToggleTestingMode = async () => {
+    try {
+      setTestingError(null);
+      setTestingSuccess(null);
+      setTestingLoading(true);
+
+      if (testingConfig?.enabled) {
+        // Disable testing mode
+        const result = await api.disableTestingMode();
+        setTestingConfig(result);
+        setTestingSuccess('Testing mode disabled successfully');
+      } else {
+        // Enable testing mode
+        if (!testingPhoneNumber.trim()) {
+          setTestingError('Please enter a phone number to enable testing mode');
+          return;
+        }
+        const result = await api.enableTestingMode(testingPhoneNumber.trim());
+        setTestingConfig(result);
+        setTestingSuccess('Testing mode enabled successfully');
+      }
+    } catch (err: any) {
+      setTestingError(err.response?.data?.detail || 'Failed to update testing mode');
+    } finally {
+      setTestingLoading(false);
+    }
+  };
+
+  const handleUpdatePhoneNumber = async () => {
+    if (!testingPhoneNumber.trim()) {
+      setTestingError('Phone number cannot be empty');
+      return;
+    }
+
+    try {
+      setTestingError(null);
+      setTestingSuccess(null);
+      setTestingLoading(true);
+
+      const result = await api.updateTestingConfig({ phone_number: testingPhoneNumber.trim() });
+      setTestingConfig(result);
+      setTestingSuccess('Phone number updated successfully');
+    } catch (err: any) {
+      setTestingError(err.response?.data?.detail || 'Failed to update phone number');
+    } finally {
+      setTestingLoading(false);
+    }
+  };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -381,6 +465,145 @@ export function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Testing Mode Configuration (Super Admin Only) */}
+        {user?.role === 'super_admin' && (
+          <Card className="border-amber-200 bg-amber-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FlaskConical className="h-5 w-5 text-amber-600" />
+                Testing Mode Configuration
+              </CardTitle>
+              <CardDescription>
+                Configure testing mode to use a specific merchant phone number for all users
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Success/Error Messages */}
+              {testingSuccess && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <p className="text-sm text-green-800">{testingSuccess}</p>
+                </div>
+              )}
+              {testingError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <p className="text-sm text-red-800">{testingError}</p>
+                </div>
+              )}
+
+              {/* Current Status */}
+              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-amber-200">
+                <div className="flex items-center gap-3">
+                  <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                    testingConfig?.enabled ? 'bg-amber-100' : 'bg-gray-100'
+                  }`}>
+                    {testingConfig?.enabled ? (
+                      <ToggleRight className="h-5 w-5 text-amber-600" />
+                    ) : (
+                      <ToggleLeft className="h-5 w-5 text-gray-400" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Testing Mode</p>
+                    <p className="text-sm text-gray-500">
+                      {testingConfig?.enabled 
+                        ? `Active - Using phone: ${testingConfig.phone_number}` 
+                        : 'Disabled - Each user sees their own data'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={loadTestingConfig}
+                    disabled={testingLoading}
+                  >
+                    <RefreshCw className={`h-4 w-4 ${testingLoading ? 'animate-spin' : ''}`} />
+                  </Button>
+                  <Badge variant={testingConfig?.enabled ? 'warning' : 'secondary'}>
+                    {testingConfig?.enabled ? 'ENABLED' : 'DISABLED'}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Phone Number Input */}
+              <div className="space-y-3">
+                <Label htmlFor="testing_phone" className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  Test Merchant Phone Number
+                </Label>
+                <div className="flex gap-3">
+                  <Input
+                    id="testing_phone"
+                    type="text"
+                    value={testingPhoneNumber}
+                    onChange={(e) => setTestingPhoneNumber(e.target.value)}
+                    placeholder="e.g., 8637609763"
+                    className="flex-1"
+                  />
+                  {testingConfig?.enabled && testingPhoneNumber !== testingConfig.phone_number && (
+                    <Button
+                      onClick={handleUpdatePhoneNumber}
+                      disabled={testingLoading}
+                      variant="outline"
+                    >
+                      {testingLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        'Update'
+                      )}
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">
+                  When testing mode is enabled, all WhatsApp users will see data from this merchant phone number
+                </p>
+              </div>
+
+              {/* Toggle Button */}
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleToggleTestingMode}
+                  disabled={testingLoading || (!testingConfig?.enabled && !testingPhoneNumber.trim())}
+                  className={testingConfig?.enabled 
+                    ? 'bg-gray-600 hover:bg-gray-700' 
+                    : 'bg-amber-600 hover:bg-amber-700'}
+                >
+                  {testingLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : testingConfig?.enabled ? (
+                    <>
+                      <ToggleLeft className="h-4 w-4 mr-2" />
+                      Disable Testing Mode
+                    </>
+                  ) : (
+                    <>
+                      <ToggleRight className="h-4 w-4 mr-2" />
+                      Enable Testing Mode
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Info Box */}
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">How Testing Mode Works</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• <strong>When Enabled:</strong> All WhatsApp users will get data from the specified test merchant phone</li>
+                  <li>• <strong>When Disabled:</strong> Each user's actual phone number is used to fetch their data</li>
+                  <li>• Changes apply immediately without server restart</li>
+                  <li>• Configuration persists across server restarts</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
   );

@@ -300,3 +300,15 @@ export interface CSVImportResult {
   skipped: number;
   errors: string[];
 }
+
+// Testing Mode Types
+export interface TestingConfig {
+  enabled: boolean;
+  phone_number: string | null;
+  message?: string;
+}
+
+export interface UpdateTestingConfig {
+  enabled?: boolean;
+  phone_number?: string;
+}
