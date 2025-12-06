@@ -149,23 +149,9 @@ export function LoginPage() {
             <h2 className="text-4xl font-bold text-white mb-4">
               Intelligent Customer Support Platform
             </h2>
-            <p className="text-white/80 text-lg mb-8">
+            <p className="text-white/80 text-lg">
               AI-powered ticket management, real-time analytics, and seamless WhatsApp integration.
             </p>
-            <div className="flex gap-8">
-              <div>
-                <p className="text-3xl font-bold text-white">10k+</p>
-                <p className="text-white/60 text-sm">Active Users</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-white">99%</p>
-                <p className="text-white/60 text-sm">Satisfaction</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-white">24/7</p>
-                <p className="text-white/60 text-sm">AI Support</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
