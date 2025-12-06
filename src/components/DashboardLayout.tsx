@@ -99,8 +99,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <nav className="flex-1 px-4 py-6 space-y-2">
             {filteredNavItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.href ||
-                (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
+              // Exact match for most routes, or startsWith for sub-pages (but not if another nav item matches better)
+              const isExactMatch = location.pathname === item.href;
+              const isSubRoute = location.pathname.startsWith(item.href + '/');
+              // Special case: /tickets should not match when on /tickets/unassigned
+              const isActive = isExactMatch || (isSubRoute && item.href !== '/tickets');
 
               return (
                 <Link
