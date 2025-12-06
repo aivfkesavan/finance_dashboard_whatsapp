@@ -19,6 +19,12 @@ import type {
   WhatsAppUser,
   WhatsAppUserQueryParams,
   WhatsAppUserDetails,
+  KnowledgeBaseEntry,
+  CreateKnowledgeBaseEntry,
+  UpdateKnowledgeBaseEntry,
+  RAGSyncStatus,
+  RAGSyncResult,
+  CSVImportResult,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -305,6 +311,81 @@ class ApiClient {
       total_messages: data.total_messages || 0,
       tickets: data.tickets || [],
     };
+  }
+
+  // RAG Knowledge Base APIs
+  async listKnowledgeBaseEntries(params?: { 
+    skip?: number; 
+    limit?: number; 
+    category?: string; 
+    search?: string; 
+  }): Promise<{ entries: KnowledgeBaseEntry[]; total: number }> {
+    const queryParams = new URLSearchParams();
+    if (params?.skip) queryParams.append('skip', String(params.skip));
+    if (params?.limit) queryParams.append('limit', String(params.limit));
+    if (params?.category) queryParams.append('category', params.category);
+    if (params?.search) queryParams.append('search', params.search);
+
+    const response = await this.client.get(`/api/v1/rag/entries?${queryParams.toString()}`);
+    const data = response.data.data || response.data;
+
+    return {
+      entries: data.entries || [],
+      total: data.total || 0,
+    };
+  }
+
+  async getKnowledgeBaseEntry(id: number): Promise<KnowledgeBaseEntry> {
+    const response = await this.client.get(`/api/v1/rag/entries/${id}`);
+    return response.data.data || response.data;
+  }
+
+  async createKnowledgeBaseEntry(entry: CreateKnowledgeBaseEntry): Promise<KnowledgeBaseEntry> {
+    const response = await this.client.post('/api/v1/rag/entries', entry);
+    return response.data.data || response.data;
+  }
+
+  async updateKnowledgeBaseEntry(id: number, entry: UpdateKnowledgeBaseEntry): Promise<KnowledgeBaseEntry> {
+    const response = await this.client.put(`/api/v1/rag/entries/${id}`, entry);
+    return response.data.data || response.data;
+  }
+
+  async deleteKnowledgeBaseEntry(id: number): Promise<void> {
+    await this.client.delete(`/api/v1/rag/entries/${id}`);
+  }
+
+  async syncToQdrant(): Promise<RAGSyncResult> {
+    const response = await this.client.post('/api/v1/rag/sync');
+    return response.data.stats || response.data.data?.stats || response.data;
+  }
+
+  async getRAGSyncStatus(): Promise<RAGSyncStatus> {
+    const response = await this.client.get('/api/v1/rag/status');
+    return response.data.data || response.data;
+  }
+
+  async getRAGCategories(): Promise<string[]> {
+    const response = await this.client.get('/api/v1/rag/categories');
+    const data = response.data.data || response.data;
+    return data.categories || [];
+  }
+
+  async getNextQuestionId(): Promise<number> {
+    const response = await this.client.get('/api/v1/rag/next-id');
+    const data = response.data.data || response.data;
+    return data.next_question_id;
+  }
+
+  async importCSV(file: File, clearExisting: boolean = false): Promise<CSVImportResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await this.client.post(
+      `/api/v1/rag/import-csv?clear_existing=${clearExisting}`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return response.data.stats || response.data.data?.stats || response.data;
   }
 }
 

@@ -251,3 +251,52 @@ export interface WhatsAppUserDetails {
   total_messages: number;
   tickets?: Ticket[];
 }
+
+// RAG Knowledge Base Types
+export interface KnowledgeBaseEntry {
+  id: number;
+  question_id: number;
+  category: string;
+  question: string;
+  answer: string;
+  keywords: string;
+  created_at: string;
+  updated_at: string;
+  created_by: number;
+  updated_by: number;
+}
+
+export interface CreateKnowledgeBaseEntry {
+  question_id: number;
+  category: string;
+  question: string;
+  answer: string;
+  keywords: string;
+}
+
+export interface UpdateKnowledgeBaseEntry {
+  category?: string;
+  question?: string;
+  answer?: string;
+  keywords?: string;
+}
+
+export interface RAGSyncStatus {
+  db_entries: number;
+  qdrant_vectors: number;
+  in_sync: boolean;
+  collection_name: string;
+}
+
+export interface RAGSyncResult {
+  success: boolean;
+  total_entries: number;
+  vectors_uploaded: number;
+  time_taken_seconds: number;
+}
+
+export interface CSVImportResult {
+  imported: number;
+  skipped: number;
+  errors: string[];
+}

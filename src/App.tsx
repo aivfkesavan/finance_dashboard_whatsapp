@@ -8,6 +8,7 @@ import { UnassignedTicketsPage } from './pages/dashboard/UnassignedTicketsPage';
 import { UsersPage } from './pages/dashboard/UsersPage';
 import { WhatsAppUsersPage } from './pages/dashboard/WhatsAppUsersPage';
 import { UserConversationPage } from './pages/dashboard/UserConversationPage';
+import { KnowledgeBasePage } from './pages/dashboard/KnowledgeBasePage';
 import { SettingsPage } from './pages/dashboard/SettingsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
           <Route path="/whatsapp-users" element={<ProtectedRoute><WhatsAppUsersPage /></ProtectedRoute>} />
           <Route path="/whatsapp-users/:userId" element={<ProtectedRoute><UserConversationPage /></ProtectedRoute>} />
+          <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBasePage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
