@@ -1,20 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DashboardLayout } from '../../components/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Card, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { api } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import type { DashboardStats } from '../../types';
 import {
-  TicketIcon,
+  Ticket,
   Users,
   Clock,
-  CheckCircle2,
-  TrendingUp,
+  CheckCircle,
   AlertCircle,
   ArrowRight,
+  TrendingUp,
+  RefreshCw,
 } from 'lucide-react';
 
 export function DashboardPage() {
@@ -43,65 +44,30 @@ export function DashboardPage() {
     }
   };
 
-  const statCards = stats
-    ? [
-        {
-          title: 'Total Tickets',
-          value: stats.total_tickets,
-          icon: TicketIcon,
-          color: 'text-blue-600',
-          bgColor: 'bg-blue-100',
-        },
-        {
-          title: 'Unassigned',
-          value: stats.unassigned_tickets,
-          icon: AlertCircle,
-          color: 'text-orange-600',
-          bgColor: 'bg-orange-100',
-        },
-        {
-          title: 'In Progress',
-          value: stats.in_progress_tickets,
-          icon: Clock,
-          color: 'text-yellow-600',
-          bgColor: 'bg-yellow-100',
-        },
-        {
-          title: 'Resolved',
-          value: stats.resolved_tickets,
-          icon: CheckCircle2,
-          color: 'text-green-600',
-          bgColor: 'bg-green-100',
-        },
-      ]
-    : [];
-
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      open: 'default',
-      in_progress: 'secondary',
-      resolved: 'outline',
-      closed: 'outline',
-    };
-    return variants[status] || 'default';
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'open': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'in_progress': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'resolved': return 'bg-green-50 text-green-700 border-green-200';
+      default: return 'bg-gray-50 text-gray-700 border-gray-200';
+    }
   };
 
-  const getCategoryBadge = (category: string) => {
-    const colors: Record<string, string> = {
-      payment: 'bg-blue-100 text-blue-800',
-      loan: 'bg-purple-100 text-purple-800',
-      account: 'bg-green-100 text-green-800',
-      technical: 'bg-red-100 text-red-800',
-      general: 'bg-gray-100 text-gray-800',
-    };
-    return colors[category] || colors.general;
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'payment': return 'bg-blue-50 text-blue-600';
+      case 'loan': return 'bg-purple-50 text-purple-600';
+      case 'account': return 'bg-green-50 text-green-600';
+      case 'technical': return 'bg-red-50 text-red-600';
+      default: return 'bg-gray-50 text-gray-600';
+    }
   };
 
   if (loading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <RefreshCw className="h-8 w-8 text-gray-400 animate-spin" />
         </div>
       </DashboardLayout>
     );
@@ -110,19 +76,13 @@ export function DashboardPage() {
   if (error || !stats) {
     return (
       <DashboardLayout>
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-900">Error Loading Dashboard</CardTitle>
-            <CardDescription className="text-red-700">
-              {error || 'Failed to load dashboard data'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={loadDashboardStats} variant="outline">
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center h-96">
+          <AlertCircle className="h-12 w-12 text-gray-300 mb-4" />
+          <p className="text-gray-500 mb-4">{error || 'Failed to load data'}</p>
+          <Button onClick={loadDashboardStats} variant="outline" size="sm">
+            Try Again
+          </Button>
+        </div>
       </DashboardLayout>
     );
   }
@@ -131,94 +91,127 @@ export function DashboardPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Welcome back! Here's your overview.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Overview of your support system</p>
+          </div>
+          <Button onClick={loadDashboardStats} variant="outline" size="sm">
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statCards.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.title}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
-                    </div>
-                    <div className={`${stat.bgColor} p-3 rounded-lg`}>
-                      <Icon className={`h-6 w-6 ${stat.color}`} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+        {/* Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="bg-white border border-gray-200">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Total Tickets</p>
+                  <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.total_tickets}</p>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                  <Ticket className="h-5 w-5 text-gray-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border border-gray-200">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Unassigned</p>
+                  <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.unassigned_tickets}</p>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center">
+                  <AlertCircle className="h-5 w-5 text-orange-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border border-gray-200">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">In Progress</p>
+                  <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.in_progress_tickets}</p>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-amber-50 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-amber-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border border-gray-200">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Resolved</p>
+                  <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.resolved_tickets}</p>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-green-50 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Main Content Grid */}
+        {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Tickets */}
-          <Card className="lg:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Recent Tickets</CardTitle>
-                <CardDescription>Latest support requests</CardDescription>
+          <Card className="lg:col-span-2 bg-white border border-gray-200">
+            <div className="p-5 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-medium text-gray-900">Recent Tickets</h2>
+                  <p className="text-sm text-gray-500">Latest support requests</p>
+                </div>
+                <Link to="/tickets">
+                  <Button variant="ghost" size="sm" className="text-gray-600">
+                    View All
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </Link>
               </div>
-              <Link to="/tickets">
-                <Button variant="outline" size="sm">
-                  View All
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
-            </CardHeader>
-            <CardContent>
+            </div>
+            <CardContent className="p-0">
               {stats.recent_tickets.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <TicketIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                  <p>No tickets yet</p>
+                <div className="py-12 text-center">
+                  <Ticket className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">No tickets yet</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="divide-y divide-gray-100">
                   {stats.recent_tickets.map((ticket) => (
                     <Link
                       key={ticket.id}
                       to={`/tickets/${ticket.id}`}
-                      className="block p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all"
+                      className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-gray-900">
-                              {ticket.phone_number}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className={getCategoryBadge(ticket.category)}
-                            >
-                              {ticket.category}
-                            </Badge>
-                          </div>
-                          {ticket.merchant_id && (
-                            <p className="text-sm text-gray-600">
-                              Merchant: {ticket.merchant_id}
-                            </p>
-                          )}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-9 w-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <Ticket className="h-4 w-4 text-gray-500" />
                         </div>
-                        <Badge variant={getStatusBadge(ticket.status)}>
-                          {ticket.status.replace('_', ' ')}
-                        </Badge>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-900 text-sm">{ticket.phone_number}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded ${getCategoryColor(ticket.category)}`}>
+                              {ticket.category}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {ticket.assigned_agent?.full_name || 'Unassigned'} • {new Date(ticket.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <span>
-                          {ticket.assigned_agent?.full_name || 'Unassigned'}
-                        </span>
-                        <span>
-                          {new Date(ticket.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
+                      <Badge variant="outline" className={`text-xs ${getStatusColor(ticket.status)}`}>
+                        {ticket.status.replace('_', ' ')}
+                      </Badge>
                     </Link>
                   ))}
                 </div>
@@ -227,42 +220,36 @@ export function DashboardPage() {
           </Card>
 
           {/* Top Agents */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Agents</CardTitle>
-              <CardDescription>Best performing agents</CardDescription>
-            </CardHeader>
-            <CardContent>
+          <Card className="bg-white border border-gray-200">
+            <div className="p-5 border-b border-gray-100">
+              <h2 className="text-base font-medium text-gray-900">Top Agents</h2>
+              <p className="text-sm text-gray-500">Best performing</p>
+            </div>
+            <CardContent className="p-0">
               {stats.top_agents.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                  <p>No agents yet</p>
+                <div className="py-12 text-center">
+                  <Users className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">No agents yet</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="divide-y divide-gray-100">
                   {stats.top_agents.map((agent, index) => (
-                    <div key={agent.agent_id} className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                        #{index + 1}
+                    <div key={agent.agent_id} className="flex items-center gap-3 p-4">
+                      <div className="h-9 w-9 rounded-lg bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-600">
+                        {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">
-                          {agent.agent_name}
-                        </p>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <span>{agent.total_resolved} resolved</span>
-                          <span>•</span>
-                          <span>{agent.active_tickets} active</span>
-                        </div>
+                        <p className="font-medium text-sm text-gray-900 truncate">{agent.agent_name}</p>
+                        <p className="text-xs text-gray-500">{agent.total_resolved} resolved • {agent.active_tickets} active</p>
                       </div>
                       <div className="text-right">
-                        <div className="flex items-center gap-1 text-green-600 text-sm font-medium">
-                          <TrendingUp className="h-4 w-4" />
+                        <div className="flex items-center gap-1 text-sm text-green-600">
+                          <TrendingUp className="h-3.5 w-3.5" />
                           {Math.round(agent.utilization)}%
                         </div>
-                        <div className={`text-xs ${agent.is_available ? 'text-green-600' : 'text-gray-400'}`}>
-                          {agent.is_available ? 'Available' : 'Offline'}
-                        </div>
+                        <span className={`text-xs ${agent.is_available ? 'text-green-600' : 'text-gray-400'}`}>
+                          {agent.is_available ? 'Online' : 'Offline'}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -273,29 +260,28 @@ export function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common tasks and shortcuts</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-white border border-gray-200">
+          <div className="p-5 border-b border-gray-100">
+            <h2 className="text-base font-medium text-gray-900">Quick Actions</h2>
+          </div>
+          <CardContent className="p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Link to="/tickets/unassigned">
-                <Button variant="outline" className="w-full justify-start">
-                  <AlertCircle className="h-4 w-4 mr-2" />
-                  View Unassigned Queue
+                <Button variant="outline" className="w-full justify-start h-11">
+                  <AlertCircle className="h-4 w-4 mr-2 text-gray-500" />
+                  Ticket Queue
                 </Button>
               </Link>
               <Link to="/tickets">
-                <Button variant="outline" className="w-full justify-start">
-                  <TicketIcon className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="w-full justify-start h-11">
+                  <Ticket className="h-4 w-4 mr-2 text-gray-500" />
                   All Tickets
                 </Button>
               </Link>
-              <Link to="/users">
-                <Button variant="outline" className="w-full justify-start">
-                  <Users className="h-4 w-4 mr-2" />
-                  Manage Users
+              <Link to="/team">
+                <Button variant="outline" className="w-full justify-start h-11">
+                  <Users className="h-4 w-4 mr-2 text-gray-500" />
+                  Manage Team
                 </Button>
               </Link>
             </div>

@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { DashboardLayout } from '../../components/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Card, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Select } from '../../components/ui/select';
 import { api } from '../../lib/api';
 import type { Ticket, TicketQueryParams, PaginatedResponse } from '../../types';
 import {
   Search,
-  Filter,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
-  Eye,
+  Ticket as TicketIcon,
+  Filter,
+  X,
 } from 'lucide-react';
 
 export function TicketsPage() {
@@ -23,11 +23,11 @@ export function TicketsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filter states
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
   const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') || 'all');
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1'));
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     loadTickets();
@@ -50,7 +50,6 @@ export function TicketsPage() {
       const data = await api.listTickets(params);
       setTickets(data);
 
-      // Update URL params
       const newParams = new URLSearchParams();
       newParams.set('page', currentPage.toString());
       if (statusFilter !== 'all') newParams.set('status', statusFilter);
@@ -59,11 +58,10 @@ export function TicketsPage() {
       setSearchParams(newParams);
     } catch (err: any) {
       if (err.response?.status === 403) {
-        setError('You do not have permission to view all tickets. Please contact an administrator.');
+        setError('You do not have permission to view tickets.');
       } else {
         setError('Failed to load tickets');
       }
-      console.error('Error loading tickets:', err);
     } finally {
       setLoading(false);
     }
@@ -83,35 +81,32 @@ export function TicketsPage() {
     setSearchParams({});
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      open: 'default',
-      in_progress: 'secondary',
-      resolved: 'outline',
-      closed: 'outline',
-    };
-    return variants[status] || 'default';
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'open': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'in_progress': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'resolved': return 'bg-green-50 text-green-700 border-green-200';
+      case 'closed': return 'bg-gray-100 text-gray-600 border-gray-200';
+      default: return 'bg-gray-50 text-gray-700 border-gray-200';
+    }
   };
 
-  const getCategoryBadge = (category: string) => {
-    const colors: Record<string, string> = {
-      payment: 'bg-blue-100 text-blue-800',
-      loan: 'bg-purple-100 text-purple-800',
-      account: 'bg-green-100 text-green-800',
-      technical: 'bg-red-100 text-red-800',
-      general: 'bg-gray-100 text-gray-800',
-    };
-    return colors[category] || colors.general;
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'payment': return 'bg-blue-50 text-blue-600';
+      case 'loan': return 'bg-purple-50 text-purple-600';
+      case 'account': return 'bg-green-50 text-green-600';
+      case 'technical': return 'bg-red-50 text-red-600';
+      default: return 'bg-gray-50 text-gray-600';
+    }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-
     if (diffInHours < 1) return 'Just now';
     if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 48) return 'Yesterday';
     return date.toLocaleDateString();
   };
 
@@ -121,210 +116,176 @@ export function TicketsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">All Tickets</h1>
-            <p className="text-gray-600 mt-1">
-              {tickets ? `${tickets.total} total tickets` : 'Loading tickets...'}
+            <h1 className="text-2xl font-semibold text-gray-900">All Tickets</h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {tickets ? `${tickets.total} tickets` : 'Loading...'}
             </p>
           </div>
-          <Button onClick={loadTickets} variant="outline" disabled={loading}>
+          <Button onClick={loadTickets} variant="outline" size="sm" disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
 
-        {/* Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filters
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        {/* Search & Filters */}
+        <Card className="bg-white border border-gray-200">
+          <CardContent className="p-4">
             <form onSubmit={handleSearch} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Search */}
-                <div className="md:col-span-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      type="text"
-                      placeholder="Search by phone, merchant ID..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
+              <div className="flex gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search by phone or merchant ID..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 bg-gray-50 border-gray-200"
+                  />
                 </div>
-
-                {/* Status Filter */}
-                <Select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="open">Open</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="resolved">Resolved</option>
-                  <option value="closed">Closed</option>
-                </Select>
-
-                {/* Category Filter */}
-                <Select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                >
-                  <option value="all">All Categories</option>
-                  <option value="payment">Payment</option>
-                  <option value="loan">Loan</option>
-                  <option value="account">Account</option>
-                  <option value="technical">Technical</option>
-                  <option value="general">General</option>
-                </Select>
-              </div>
-
-              <div className="flex gap-2">
-                <Button type="submit" disabled={loading}>
-                  Apply Filters
-                </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={handleResetFilters}
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={showFilters ? 'bg-gray-100' : ''}
                 >
-                  Reset
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filters
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  Search
                 </Button>
               </div>
+
+              {showFilters && (
+                <div className="flex flex-wrap gap-3 pt-3 border-t border-gray-100">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                    className="px-3 py-2 text-sm border border-gray-200 rounded-md bg-white"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="open">Open</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                  </select>
+
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }}
+                    className="px-3 py-2 text-sm border border-gray-200 rounded-md bg-white"
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="payment">Payment</option>
+                    <option value="loan">Loan</option>
+                    <option value="account">Account</option>
+                    <option value="technical">Technical</option>
+                    <option value="general">General</option>
+                  </select>
+
+                  <Button type="button" variant="ghost" size="sm" onClick={handleResetFilters}>
+                    <X className="h-4 w-4 mr-1" />
+                    Reset
+                  </Button>
+                </div>
+              )}
             </form>
           </CardContent>
         </Card>
 
         {/* Tickets List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Tickets</CardTitle>
-            <CardDescription>
-              {tickets && `Showing ${tickets.items.length} of ${tickets.total} tickets`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading && !tickets ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              </div>
-            ) : error ? (
-              <div className="text-center py-12 text-red-600">
-                <p>{error}</p>
-                <Button onClick={loadTickets} variant="outline" className="mt-4">
-                  Retry
-                </Button>
-              </div>
-            ) : tickets && tickets.items.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <p>No tickets found</p>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-3">
-                  {tickets?.items.map((ticket) => (
-                    <div
-                      key={ticket.id}
-                      className="p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-semibold text-gray-900">
-                              {ticket.phone_number}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className={getCategoryBadge(ticket.category)}
-                            >
-                              {ticket.category}
-                            </Badge>
-                            <Badge variant={getStatusBadge(ticket.status)}>
-                              {ticket.status.replace('_', ' ')}
-                            </Badge>
-                          </div>
+        {loading && !tickets ? (
+          <div className="flex items-center justify-center py-16">
+            <RefreshCw className="h-8 w-8 text-gray-400 animate-spin" />
+          </div>
+        ) : error ? (
+          <Card className="bg-white border border-gray-200">
+            <CardContent className="py-12 text-center">
+              <p className="text-gray-500">{error}</p>
+              <Button onClick={loadTickets} variant="outline" className="mt-4">
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        ) : tickets && tickets.items.length === 0 ? (
+          <Card className="bg-white border border-gray-200">
+            <CardContent className="py-16 text-center">
+              <TicketIcon className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">No tickets found</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {tickets?.items.map((ticket) => (
+              <Card key={ticket.id} className="bg-white border border-gray-200 hover:border-gray-300 transition-colors">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <TicketIcon className="h-5 w-5 text-gray-500" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-gray-900">{ticket.phone_number}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded ${getCategoryColor(ticket.category)}`}>
+                            {ticket.category}
+                          </span>
+                          <Badge variant="outline" className={`text-xs ${getStatusColor(ticket.status)}`}>
+                            {ticket.status.replace('_', ' ')}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                          <span>{ticket.assigned_agent?.full_name || 'Unassigned'}</span>
+                          <span>•</span>
+                          <span>{formatDate(ticket.created_at)}</span>
                           {ticket.merchant_id && (
-                            <p className="text-sm text-gray-600">
-                              Merchant: {ticket.merchant_id}
-                            </p>
+                            <>
+                              <span>•</span>
+                              <span className="font-mono text-xs">{ticket.merchant_id}</span>
+                            </>
                           )}
                         </div>
-                        <Link to={`/tickets/${ticket.id}`}>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4 mr-2" />
-                            View
-                          </Button>
-                        </Link>
-                      </div>
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <span className="text-gray-500">Agent:</span>
-                          <p className="font-medium text-gray-900">
-                            {ticket.assigned_agent?.full_name || 'Unassigned'}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Created:</span>
-                          <p className="font-medium text-gray-900">
-                            {formatDate(ticket.created_at)}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Updated:</span>
-                          <p className="font-medium text-gray-900">
-                            {formatDate(ticket.updated_at)}
-                          </p>
-                        </div>
-                        {ticket.waiting_time !== undefined && (
-                          <div>
-                            <span className="text-gray-500">Wait Time:</span>
-                            <p className="font-medium text-gray-900">
-                              {Math.round(ticket.waiting_time / 60)}m
-                            </p>
-                          </div>
-                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                {tickets && tickets.total_pages > 1 && (
-                  <div className="flex items-center justify-between mt-6 pt-6 border-t">
-                    <div className="text-sm text-gray-600">
-                      Page {tickets.page} of {tickets.total_pages}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(currentPage - 1)}
-                        disabled={currentPage === 1 || loading}
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        Previous
+                    <Link to={`/tickets/${ticket.id}`}>
+                      <Button variant="ghost" size="sm" className="text-gray-600">
+                        View
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(currentPage + 1)}
-                        disabled={currentPage === tickets.total_pages || loading}
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
+                    </Link>
                   </div>
-                )}
-              </>
+                </CardContent>
+              </Card>
+            ))}
+
+            {/* Pagination */}
+            {tickets && tickets.total_pages > 1 && (
+              <div className="flex items-center justify-between pt-4">
+                <p className="text-sm text-gray-500">
+                  Page {tickets.page} of {tickets.total_pages}
+                </p>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === tickets.total_pages}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
