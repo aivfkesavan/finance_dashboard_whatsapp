@@ -27,6 +27,7 @@ import type {
   CSVImportResult,
   TestingConfig,
   UpdateTestingConfig,
+  UsageStatsResponse,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -408,6 +409,17 @@ class ApiClient {
 
   async disableTestingMode(): Promise<TestingConfig> {
     const response = await this.client.post('/api/v1/testing/disable');
+    return response.data;
+  }
+
+  // Usage Stats APIs
+  async getUsageStats(startDate: string, endDate: string): Promise<UsageStatsResponse> {
+    const response = await this.client.get('/api/v1/usage/stats', {
+      params: {
+        start_date: startDate,
+        end_date: endDate,
+      },
+    });
     return response.data;
   }
 }

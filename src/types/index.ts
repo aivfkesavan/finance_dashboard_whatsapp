@@ -312,3 +312,64 @@ export interface UpdateTestingConfig {
   enabled?: boolean;
   phone_number?: string;
 }
+
+// Usage Stats Types
+export interface UsageStatsResponse {
+  status: string;
+  data: UsageStatsData;
+  requested_by: string;
+  timestamp: string;
+}
+
+export interface UsageStatsData {
+  period: {
+    start_date: string;
+    end_date: string;
+  };
+  overall_stats: {
+    total_users: number;
+    total_messages: number;
+    messages_received: number;
+    responses_sent: number;
+    successful_responses: number;
+    failed_responses: number;
+    response_success_rate_percent: number;
+    total_text_messages: number;
+    total_audio_messages: number;
+  };
+  query_stats: {
+    successful_queries: number;
+    failed_queries: number;
+    success_rate_percent: number;
+  };
+  llm_tokens: {
+    total_tokens: number;
+    input_tokens: number;
+    output_tokens: number;
+    avg_tokens_per_message: number;
+  };
+  audio_processing: {
+    total_calls: number;
+    successful_calls: number;
+    failed_calls: number;
+    success_rate_percent: number;
+    transcription_calls: number;
+    translation_calls: number;
+    total_audio_duration_seconds: number;
+    avg_audio_duration: number;
+  };
+  breakdown_by_operation: {
+    routing: { total_tokens: number; avg_tokens: number };
+    response: { total_tokens: number; avg_tokens: number };
+    dispute: { total_tokens: number; avg_tokens: number };
+    error: { total_tokens: number; avg_tokens: number };
+  };
+  api_usage: {
+    total_api_calls: number;
+    endpoints_called: {
+      transactions: number;
+      balance: number;
+      merchant_verify: number;
+    };
+  };
+}
