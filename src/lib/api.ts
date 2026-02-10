@@ -410,6 +410,29 @@ class ApiClient {
     const response = await this.client.post('/api/v1/testing/disable');
     return response.data;
   }
+
+  // Usage Logs APIs
+  async getUsageLogs(params?: {
+    service_type?: string;
+    status_filter?: string;
+    user_phone?: string;
+    from_date?: string;
+    to_date?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const response = await this.client.get('/api/v1/admin/usage-logs', { params });
+    return response.data.data;
+  }
+
+  async getUsageSummary(params?: {
+    service_type?: string;
+    from_date?: string;
+    to_date?: string;
+  }) {
+    const response = await this.client.get('/api/v1/admin/usage-logs/summary', { params });
+    return response.data.data;
+  }
 }
 
 export const api = new ApiClient();

@@ -10,6 +10,7 @@ import { WhatsAppUsersPage } from './pages/dashboard/WhatsAppUsersPage';
 import { UserConversationPage } from './pages/dashboard/UserConversationPage';
 import { KnowledgeBasePage } from './pages/dashboard/KnowledgeBasePage';
 import { SettingsPage } from './pages/dashboard/SettingsPage';
+import { UsageLogsPage } from './pages/dashboard/UsageLogsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="/whatsapp-users" element={<ProtectedRoute><WhatsAppUsersPage /></ProtectedRoute>} />
           <Route path="/whatsapp-users/:userId" element={<ProtectedRoute><UserConversationPage /></ProtectedRoute>} />
           <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBasePage /></ProtectedRoute>} />
+          <Route path="/usage-logs" element={<ProtectedRoute><UsageLogsPage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
