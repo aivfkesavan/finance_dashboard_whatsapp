@@ -12,7 +12,6 @@ import {
   ClipboardList,
   Contact,
   BookOpen,
-  Activity,
 } from 'lucide-react';
 import { Button } from './ui/button';
 
@@ -37,7 +36,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Ticket Queue', href: '/tickets/unassigned', icon: ClipboardList },
     { name: 'All Tickets', href: '/tickets', icon: Ticket },
     { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen, superAdminOnly: true },
-    { name: 'Usage Logs', href: '/usage-logs', icon: Activity, superAdminOnly: true },
     { name: 'Team', href: '/users', icon: Users, adminOnly: true },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
