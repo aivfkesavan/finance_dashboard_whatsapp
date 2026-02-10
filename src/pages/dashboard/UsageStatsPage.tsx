@@ -77,6 +77,26 @@ export function UsageStatsPage() {
     setEndDate(today.toISOString().split('T')[0]);
   };
 
+  const getDateRange = (type: 'today' | 'week' | 'month') => {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    if (type === 'today') {
+      return { start: todayStr, end: todayStr };
+    } else if (type === 'week') {
+      const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      return { start: sevenDaysAgo.toISOString().split('T')[0], end: todayStr };
+    } else {
+      const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      return { start: thirtyDaysAgo.toISOString().split('T')[0], end: todayStr };
+    }
+  };
+
+  const isButtonActive = (type: 'today' | 'week' | 'month') => {
+    const range = getDateRange(type);
+    return startDate === range.start && endDate === range.end;
+  };
+
   const data = stats?.data;
   const overall = data?.overall_stats;
   const llm = data?.llm_tokens;
@@ -128,21 +148,21 @@ export function UsageStatsPage() {
               <div className="flex gap-2">
                 <Button
                   onClick={handleTodayClick}
-                  variant="outline"
+                  variant={isButtonActive('today') ? 'default' : 'outline'}
                   size="sm"
                 >
                   Today
                 </Button>
                 <Button
                   onClick={handleLastWeekClick}
-                  variant="outline"
+                  variant={isButtonActive('week') ? 'default' : 'outline'}
                   size="sm"
                 >
                   Last 7 Days
                 </Button>
                 <Button
                   onClick={handleLastMonthClick}
-                  variant="outline"
+                  variant={isButtonActive('month') ? 'default' : 'outline'}
                   size="sm"
                 >
                   Last 30 Days
