@@ -437,54 +437,56 @@ export function UsageStatsPage() {
             </Card>
 
             {/* Token Breakdown by Operation */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Token Breakdown by Operation
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Routing</p>
-                    <p className="text-2xl font-bold text-blue-600">
-                      {breakdown?.routing.total_tokens?.toLocaleString() || 0}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Avg: {breakdown?.routing.avg_tokens || 0}
-                    </p>
+            {breakdown && Object.keys(breakdown).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    Token Breakdown by Operation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="p-4 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-gray-600">Routing</p>
+                      <p className="text-2xl font-bold text-blue-600">
+                        {breakdown?.routing?.total_tokens?.toLocaleString() || 0}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Avg: {breakdown?.routing?.avg_tokens || 0}
+                      </p>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <p className="text-sm text-gray-600">Response</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {breakdown?.response?.total_tokens?.toLocaleString() || 0}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Avg: {breakdown?.response?.avg_tokens || 0}
+                      </p>
+                    </div>
+                    <div className="p-4 bg-yellow-50 rounded-lg">
+                      <p className="text-sm text-gray-600">Dispute</p>
+                      <p className="text-2xl font-bold text-yellow-600">
+                        {breakdown?.dispute?.total_tokens?.toLocaleString() || 0}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Avg: {breakdown?.dispute?.avg_tokens || 0}
+                      </p>
+                    </div>
+                    <div className="p-4 bg-red-50 rounded-lg">
+                      <p className="text-sm text-gray-600">Error</p>
+                      <p className="text-2xl font-bold text-red-600">
+                        {breakdown?.error?.total_tokens?.toLocaleString() || 0}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Avg: {breakdown?.error?.avg_tokens || 0}
+                      </p>
+                    </div>
                   </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Response</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {breakdown?.response.total_tokens?.toLocaleString() || 0}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Avg: {breakdown?.response.avg_tokens || 0}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-yellow-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Dispute</p>
-                    <p className="text-2xl font-bold text-yellow-600">
-                      {breakdown?.dispute.total_tokens?.toLocaleString() || 0}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Avg: {breakdown?.dispute.avg_tokens || 0}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-red-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Error</p>
-                    <p className="text-2xl font-bold text-red-600">
-                      {breakdown?.error.total_tokens?.toLocaleString() || 0}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Avg: {breakdown?.error.avg_tokens || 0}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             {/* API Usage */}
             <Card>
@@ -501,29 +503,31 @@ export function UsageStatsPage() {
                     {apiUsage?.total_api_calls?.toLocaleString() || 0}
                   </p>
                 </div>
-                <div className="pt-4 border-t border-gray-200">
-                  <p className="text-sm text-gray-600 mb-3">Endpoints Called</p>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <p className="text-sm text-gray-600">Transactions</p>
-                      <p className="text-2xl font-bold text-blue-600">
-                        {apiUsage?.endpoints_called.transactions || 0}
-                      </p>
-                    </div>
-                    <div className="p-4 bg-green-50 rounded-lg">
-                      <p className="text-sm text-gray-600">Balance</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {apiUsage?.endpoints_called.balance || 0}
-                      </p>
-                    </div>
-                    <div className="p-4 bg-purple-50 rounded-lg">
-                      <p className="text-sm text-gray-600">Merchant Verify</p>
-                      <p className="text-2xl font-bold text-purple-600">
-                        {apiUsage?.endpoints_called.merchant_verify || 0}
-                      </p>
+                {apiUsage?.endpoints_called && Object.keys(apiUsage.endpoints_called).length > 0 && (
+                  <div className="pt-4 border-t border-gray-200">
+                    <p className="text-sm text-gray-600 mb-3">Endpoints Called</p>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <p className="text-sm text-gray-600">Transactions</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {apiUsage?.endpoints_called?.transactions || 0}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-green-50 rounded-lg">
+                        <p className="text-sm text-gray-600">Balance</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          {apiUsage?.endpoints_called?.balance || 0}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-purple-50 rounded-lg">
+                        <p className="text-sm text-gray-600">Merchant Verify</p>
+                        <p className="text-2xl font-bold text-purple-600">
+                          {apiUsage?.endpoints_called?.merchant_verify || 0}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
