@@ -44,6 +44,7 @@ export function BroadcastPage() {
 
   // Polling
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollingActive = useRef(false);
 
   const showSuccess = (msg: string) => {
     setError(null);
@@ -83,27 +84,31 @@ export function BroadcastPage() {
   useEffect(() => {
     const hasInProgress = jobs.some(j => j.status === 'in_progress' || j.status === 'pending');
 
-    if (hasInProgress) {
+    if (hasInProgress && !pollingActive.current) {
+      pollingActive.current = true;
       pollingRef.current = setInterval(async () => {
         const updated = await loadJobs(jobsPage);
-        // Update expanded job details if still expanded
-        if (expandedJob) {
-          const found = updated.find((j: BroadcastJob) => j.id === expandedJob);
-          if (found && (found.status === 'completed' || found.status === 'failed')) {
-            const details = await api.getBroadcastStatus(found.id);
-            setExpandedJobDetails(details);
-          }
+        const stillActive = updated.some((j: BroadcastJob) => j.status === 'in_progress' || j.status === 'pending');
+        if (!stillActive && pollingRef.current) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+          pollingActive.current = false;
         }
-      }, 2000);
-    } else if (pollingRef.current) {
+      }, 3000);
+    } else if (!hasInProgress && pollingRef.current) {
       clearInterval(pollingRef.current);
       pollingRef.current = null;
+      pollingActive.current = false;
     }
 
     return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+        pollingActive.current = false;
+      }
     };
-  }, [jobs, jobsPage, expandedJob, loadJobs]);
+  }, [jobs, jobsPage, loadJobs]);
 
   const handleAddRecipients = () => {
     const numbers = phoneInput
