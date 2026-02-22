@@ -11,7 +11,6 @@ import {
   Send,
   Loader2,
   Plus,
-  Trash2,
   Upload,
   Download,
   AlertCircle,
