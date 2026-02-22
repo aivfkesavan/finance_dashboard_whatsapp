@@ -42,6 +42,9 @@ export function TestingModePage() {
   // File upload
   const [uploading, setUploading] = useState(false);
 
+  // Deleting IDs (prevent double-click)
+  const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
+
   // Feedback
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -161,13 +164,21 @@ export function TestingModePage() {
   };
 
   const handleRemoveNumber = async (id: number) => {
+    if (deletingIds.has(id)) return;
     try {
+      setDeletingIds(prev => new Set(prev).add(id));
       clearFeedback();
       await api.removeWhitelistNumber(id);
       showSuccess('Number removed');
       await Promise.all([loadWhitelist(whitelistPage), loadConfig()]);
     } catch (err: any) {
       showError('Failed to remove number');
+    } finally {
+      setDeletingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
@@ -369,9 +380,10 @@ export function TestingModePage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleRemoveNumber(num.id)}
+                              disabled={deletingIds.has(num.id)}
                               className="text-red-600 hover:text-red-800 hover:bg-red-50"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              {deletingIds.has(num.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                             </Button>
                           </td>
                         </tr>
