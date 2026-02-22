@@ -13,6 +13,8 @@ import {
   Contact,
   BookOpen,
   BarChart3,
+  FlaskConical,
+  Send,
 } from 'lucide-react';
 import { Button } from './ui/button';
 
@@ -38,6 +40,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'All Tickets', href: '/tickets', icon: Ticket },
     { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen, superAdminOnly: true },
     { name: 'Usage Stats', href: '/usage-stats', icon: BarChart3, superAdminOnly: true },
+    { name: 'Testing Mode', href: '/testing-mode', icon: FlaskConical, superAdminOnly: true },
+    { name: 'Broadcast', href: '/broadcast', icon: Send, superAdminOnly: true },
     { name: 'Team', href: '/users', icon: Users, adminOnly: true },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];

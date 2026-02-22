@@ -302,15 +302,53 @@ export interface CSVImportResult {
 }
 
 // Testing Mode Types
-export interface TestingConfig {
-  enabled: boolean;
-  phone_number: string | null;
-  message?: string;
+export interface TestingModeConfig {
+  is_enabled: boolean;
+  static_response_message: string;
+  whitelist_count: number;
 }
 
-export interface UpdateTestingConfig {
-  enabled?: boolean;
-  phone_number?: string;
+export interface WhitelistNumber {
+  id: number;
+  phone_number: string;
+  label: string | null;
+  created_at: string;
+}
+
+export interface WhitelistResponse {
+  total: number;
+  page: number;
+  page_size: number;
+  numbers: WhitelistNumber[];
+}
+
+export interface AddNumbersResult {
+  added: number;
+  skipped: number;
+  added_numbers: string[];
+  skipped_numbers: string[];
+}
+
+// Broadcast Types
+export interface BroadcastJob {
+  id: number;
+  message_content: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+  total_recipients: number;
+  sent_success: number;
+  sent_failed: number;
+  created_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  error_log: Array<{ phone?: string; error: string }> | null;
+  failed_recipients?: Array<{ phone_number: string; error: string }>;
+}
+
+export interface BroadcastJobsResponse {
+  total: number;
+  page: number;
+  page_size: number;
+  jobs: BroadcastJob[];
 }
 
 // Usage Stats Types

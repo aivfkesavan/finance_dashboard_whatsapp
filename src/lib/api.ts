@@ -25,8 +25,11 @@ import type {
   RAGSyncStatus,
   RAGSyncResult,
   CSVImportResult,
-  TestingConfig,
-  UpdateTestingConfig,
+  TestingModeConfig,
+  WhitelistResponse,
+  AddNumbersResult,
+  BroadcastJob,
+  BroadcastJobsResponse,
   UsageStatsResponse,
 } from '../types';
 
@@ -392,24 +395,93 @@ class ApiClient {
   }
 
   // Testing Mode APIs
-  async getTestingConfig(): Promise<TestingConfig> {
-    const response = await this.client.get('/api/v1/testing/config');
+  async getTestingModeConfig(): Promise<TestingModeConfig> {
+    const response = await this.client.get('/api/v1/testing-mode/config');
     return response.data;
   }
 
-  async updateTestingConfig(config: UpdateTestingConfig): Promise<TestingConfig> {
-    const response = await this.client.post('/api/v1/testing/config', config);
+  async toggleTestingMode(): Promise<{ is_enabled: boolean; message: string }> {
+    const response = await this.client.post('/api/v1/testing-mode/config/toggle');
     return response.data;
   }
 
-  async enableTestingMode(phoneNumber: string): Promise<TestingConfig> {
-    const response = await this.client.post(`/api/v1/testing/enable?phone_number=${phoneNumber}`);
+  async updateStaticResponse(message: string): Promise<void> {
+    await this.client.put('/api/v1/testing-mode/config/static-response', { message });
+  }
+
+  async getWhitelist(page = 1, pageSize = 50): Promise<WhitelistResponse> {
+    const response = await this.client.get('/api/v1/testing-mode/whitelist', {
+      params: { page, page_size: pageSize },
+    });
     return response.data;
   }
 
-  async disableTestingMode(): Promise<TestingConfig> {
-    const response = await this.client.post('/api/v1/testing/disable');
+  async addWhitelistNumbers(phoneNumbers: string[], label?: string): Promise<AddNumbersResult> {
+    const response = await this.client.post('/api/v1/testing-mode/whitelist', {
+      phone_numbers: phoneNumbers,
+      label,
+    });
     return response.data;
+  }
+
+  async uploadWhitelistFile(file: File): Promise<AddNumbersResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await this.client.post('/api/v1/testing-mode/whitelist/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  }
+
+  async removeWhitelistNumber(id: number): Promise<void> {
+    await this.client.delete(`/api/v1/testing-mode/whitelist/${id}`);
+  }
+
+  async clearWhitelist(): Promise<void> {
+    await this.client.delete('/api/v1/testing-mode/whitelist');
+  }
+
+  getWhitelistSampleCsvUrl(): string {
+    return `${API_URL}/api/v1/testing-mode/whitelist/sample-csv`;
+  }
+
+  // Broadcast APIs
+  async createBroadcast(message: string, phoneNumbers: string[]): Promise<BroadcastJob> {
+    const response = await this.client.post('/api/v1/broadcast', {
+      message,
+      phone_numbers: phoneNumbers,
+    });
+    return response.data;
+  }
+
+  async uploadAndSendBroadcast(message: string, file: File): Promise<BroadcastJob> {
+    const formData = new FormData();
+    formData.append('message', message);
+    formData.append('file', file);
+    const response = await this.client.post('/api/v1/broadcast/upload-and-send', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  }
+
+  async listBroadcastJobs(page = 1, pageSize = 20): Promise<BroadcastJobsResponse> {
+    const response = await this.client.get('/api/v1/broadcast', {
+      params: { page, page_size: pageSize },
+    });
+    return response.data;
+  }
+
+  async getBroadcastStatus(jobId: number): Promise<BroadcastJob> {
+    const response = await this.client.get(`/api/v1/broadcast/${jobId}`);
+    return response.data;
+  }
+
+  async cancelBroadcast(jobId: number): Promise<void> {
+    await this.client.post(`/api/v1/broadcast/${jobId}/cancel`);
+  }
+
+  getBroadcastSampleCsvUrl(): string {
+    return `${API_URL}/api/v1/broadcast/sample-csv`;
   }
 
   // Usage Stats APIs

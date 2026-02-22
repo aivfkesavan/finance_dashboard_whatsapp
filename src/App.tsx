@@ -11,6 +11,8 @@ import { UserConversationPage } from './pages/dashboard/UserConversationPage';
 import { KnowledgeBasePage } from './pages/dashboard/KnowledgeBasePage';
 import { SettingsPage } from './pages/dashboard/SettingsPage';
 import { UsageStatsPage } from './pages/dashboard/UsageStatsPage';
+import { TestingModePage } from './pages/dashboard/TestingModePage';
+import { BroadcastPage } from './pages/dashboard/BroadcastPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -30,6 +32,8 @@ function App() {
           <Route path="/whatsapp-users/:userId" element={<ProtectedRoute><UserConversationPage /></ProtectedRoute>} />
           <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBasePage /></ProtectedRoute>} />
           <Route path="/usage-stats" element={<ProtectedRoute><UsageStatsPage /></ProtectedRoute>} />
+          <Route path="/testing-mode" element={<ProtectedRoute><TestingModePage /></ProtectedRoute>} />
+          <Route path="/broadcast" element={<ProtectedRoute><BroadcastPage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
